@@ -77,6 +77,36 @@ HOE = Hoe.spec 'nokogiri' do
 end
 HOE.spec.licenses = ['MIT']
 
+
+
+dependencies = YAML.load_file("dependencies.yml")
+%w[libxml2 libxslt].each do |lib|
+  version = dependencies[lib]
+
+  file "lib/nokogiri-#{lib}.rb" do
+    File.open("lib/nokogiri-#{lib}.rb", 'wb') do |f|
+      f.write %Q{
+        module Nokogiri
+          #{lib.upcase}_TAR_PATH = File.expand_path(../../ports/archives/#{lib}-#{version}.tar.gz", __FILE__)
+        end
+      }
+    end
+  end
+
+  spec = Gem::Specification.new "nokogiri-#{lib}" do |spec|
+    spec.version = version
+    archive = File.join("ports", "archives", "#{lib}-#{version}.tar.gz")
+    spec.files = [archive, "lib/nokogiri-#{lib}.rb"]
+    spec.licenses = ['MIT']
+    spec.summary = ""
+    spec.authors = ["The #{lib} authors"]
+  end
+
+  Gem::PackageTask.new spec do |pkg|
+  end
+end
+
+
 # ----------------------------------------
 
 def add_file_to_gem relative_path
@@ -125,13 +155,6 @@ else
   unless windows_p || java?
     task gem_build_path do
       add_file_to_gem "dependencies.yml"
-
-      dependencies = YAML.load_file("dependencies.yml")
-      %w[libxml2 libxslt].each do |lib|
-        version = dependencies[lib]
-        archive = File.join("ports", "archives", "#{lib}-#{version}.tar.gz")
-        add_file_to_gem archive
-      end
     end
   end
 

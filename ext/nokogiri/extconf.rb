@@ -22,6 +22,7 @@ ENV['RC_ARCHS'] = '' if RUBY_PLATFORM =~ /darwin/
 # :stopdoc:
 
 require 'mkmf'
+require 'yaml'
 
 RbConfig::MAKEFILE_CONFIG['CC'] = ENV['CC'] if ENV['CC']
 
@@ -194,30 +195,24 @@ if RbConfig::MAKEFILE_CONFIG['CC'] =~ /gcc/
   $CFLAGS << " -Wall -Wcast-qual -Wwrite-strings -Wconversion -Wmissing-noreturn -Winline"
 end
 
+dependencies = YAML.load_file(File.join(ROOT, "dependencies.yml"))
+
+%w[libxml2 libxslt].map do |lib|
+  require "nokogiri-#{lib}", "=#{dependencies[lib]}" rescue LoadError
+end
+libxml2_tar =
+libxslt_tar =
+
 case
-when arg_config('--use-system-libraries', !!ENV['NOKOGIRI_USE_SYSTEM_LIBRARIES'])
-  message "Building nokogiri using system libraries.\n"
-
-  dir_config('zlib')
-
-  # Using system libraries means we rely on the system libxml2 with
-  # regard to the iconv support.
-
-  dir_config('xml2').any?  || pkg_config('libxml-2.0')
-  dir_config('xslt').any?  || pkg_config('libxslt')
-  dir_config('exslt').any? || pkg_config('libexslt')
-else
+when libxml2_tar && libxslt_tar
   message "Building nokogiri using packaged libraries.\n"
 
   require 'mini_portile'
-  require 'yaml'
 
   static_p = enable_config('static', true) or
     message "Static linking is disabled.\n"
 
   dir_config('zlib')
-
-  dependencies = YAML.load_file(File.join(ROOT, "dependencies.yml"))
 
   cross_build_p = enable_config("cross-build")
   if cross_build_p || windows_p
@@ -358,6 +353,17 @@ else
       message "NONE\n"
     end
   end
+else
+  message "Building nokogiri using system libraries.\n"
+
+  dir_config('zlib')
+
+  # Using system libraries means we rely on the system libxml2 with
+  # regard to the iconv support.
+
+  dir_config('xml2').any?  || pkg_config('libxml-2.0')
+  dir_config('xslt').any?  || pkg_config('libxslt')
+  dir_config('exslt').any? || pkg_config('libexslt')
 end
 
 {
