@@ -1,51 +1,62 @@
 language: ruby
 dist: trusty
-group: beta
-sudo: required
+sudo: false
 
 matrix:
   include:
   - os: linux
-    rvm: 2.0
-  - os: osx
-    rvm: 2.0
-  - os: linux
     rvm: 2.1
   - os: osx
     rvm: 2.1
   - os: linux
-    rvm: 2.2.5
+    rvm: 2.2.9
   - os: osx
-    rvm: 2.2.5
+    rvm: 2.2.9
   - os: linux
-    rvm: 2.3.1
+    rvm: 2.3.6
   - os: osx
-    rvm: 2.3.1
+    rvm: 2.3.6
   - os: linux
-    rvm: 2.4.0
+    rvm: 2.4.3
     env:
-      - RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
   - os: osx
-    rvm: 2.4.0
+    rvm: 2.4.3
     env:
-      - RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+  - os: linux
+    rvm: 2.5.0
+    env:
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+  - os: osx
+    rvm: 2.5.0
+    env:
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
   - os: linux
     rvm: ruby-head
     env:
-      - RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
   - os: osx
     rvm: ruby-head
     env:
-      - RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
+      - TEST_RUBYOPT="--enable-frozen-string-literal --debug=frozen-string-literal"
   - os: linux
     rvm: jruby-1.7
   - os: linux
-    rvm: jruby-9.1.5.0
+    rvm: jruby-9.1.15.0
+  - os: linux
+    rvm: jruby-head
   - os: linux
     rvm: rbx-3
   allow_failures:
   - rvm: ruby-head
+  - rvm: jruby-head
+  - rvm: rbx-3
   fast_finish: true
+
+script:
+- export RUBYOPT=${TEST_RUBYOPT}
+- rake
 
 notifications:
   irc:
