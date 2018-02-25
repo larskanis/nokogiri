@@ -7,7 +7,7 @@ install:
       }
   - ruby --version
   - gem --version
-  - gem install bundler --conservative --verbose --backtrace
+  - ruby -r rubygems/package -r ./rubygems-debug -S gem install bundler --conservative --verbose --backtrace
   - bundle install
 
 build: off
